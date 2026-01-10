@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Tanque de Agua</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { border: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .alert-error-conexion { display: none; margin-top: 10px; }
+        
+        #tank-container {
+            width: 100px;
+            height: 250px;
+            border: 3px solid #6c757d;
+            border-radius: 10px;
+            position: relative;
+            margin: 0 auto;
+            background-color: #eee;
+            overflow: hidden;
+        }
+        #water-level {
+            width: 100%;
+            height: 0%;
+            background-color: #007bff;
+            position: absolute;
+            bottom: 0;
+            transition: height 1s ease-in-out;
+        }
+        .percentage-label {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #007bff;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    <h1 class="text-center mb-4 text-primary">Monitor de Tanque de Agua</h1>
+
+    <div class="alert alert-danger alert-error-conexion text-center" role="alert">
+         ¡Error de conexión! No se pudo obtener la data del servidor.
+    </div>
+
+    <div class="row text-center">
+        <div class="col-md-3">
+            <div class="card p-3 border-start border-primary border-4">
+                <h6>Nivel Actual</h6>
+                <h3 id="nivel-texto">-- cm</h3>
+                <small class="text-muted">Porcentaje de llenado</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 border-start border-warning border-4">
+                <h6>Distancia</h6>
+                <h3 id="nivel-cm">-- cm</h3>
+                <small class="text-muted">Desde la base del tanque</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 border-start border-success border-4">
+                <h6>Estado Bomba</h6>
+                <h3 id="bomba-status">--</h3>
+                <small class="text-muted">Control automático</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 border-start border-secondary border-4">
+                <h6>Última Actualización</h6>
+                <h3 id="ultima-hora">--</h3>
+                <small id="ultima-fecha" class="text-muted">Hora de lectura</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card p-4">
+                <h5>Historial de Nivel (Gráfico)</h5>
+                <div style="height: 300px;">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 text-center">
+            <div class="card p-4">
+                <h5>Visualizador</h5>
+                <div id="tank-container">
+                    <div id="water-level"></div>
+                </div>
+                <div id="porcentaje-visual" class="percentage-label">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card p-4">
+                <h5>Registros Recientes</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha / Hora</th>
+                                <th>Distancia (cm)</th>
+                                <th>Nivel</th>
+                                <th>Bomba</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-registros">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
