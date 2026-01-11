@@ -7,9 +7,7 @@
 #define TRIG 33
 #define ECHO 32
 
-int D_ALTO = 2;
-int D_MEDIO = 6;
-int H_TANQUE = 12;
+float H_TANQUE = 9.5;
 
 const char* ssid = "NOMBRE_WIFI";
 const char* password = "CONTRASEÑA_WIFI";
@@ -62,23 +60,21 @@ void setup() {
 }
 
 void loop() {
-  float D_SENSOR = readDistance();
-
+  float D_SENSOR = readDistance() - 2;
   float nivel_cm = H_TANQUE - D_SENSOR;
-
+  
   if (nivel_cm < 0) nivel_cm = 0;
   if (nivel_cm > H_TANQUE) nivel_cm = H_TANQUE;
 
   int capacidad = (nivel_cm * 100) / H_TANQUE;
-
   String nivel;
   bool bomba = false;
 
-  if (nivel_cm >= D_MEDIO) {
+  if (capacidad >= 75) {
     nivel = "ALTO";
     bomba = false;
   } 
-  else if (nivel_cm >= D_ALTO) {
+  else if (capacidad >= 50) {
     nivel = "MEDIO";
     bomba = false;
   } 
@@ -110,14 +106,13 @@ void loop() {
       "\",\"bomba\":" + String(bomba) +
       ",\"capacidad\":" + String(capacidad) +
     "}";
-
+    
     Serial.println("Enviando JSON:");
     Serial.println(json);
 
     int httpResponseCode = http.POST(json);
     Serial.print("HTTP Response: ");
     Serial.println(httpResponseCode);
-
     http.end();
   }
 
