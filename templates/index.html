@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor de Tanque - Dark Edition</title>
+    <title>Monitor de Tanque</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -24,7 +24,6 @@
             padding-top: 20px;
         }
 
-        /* --- ESTILOS DE ANIMACIÓN --- */
         .card { 
             border: 1px solid var(--border-color); 
             border-radius: 16px; 
@@ -36,7 +35,6 @@
             cursor: default;
         }
 
-        /* Borde blanco al pasar el mouse */
         .card:hover {
             transform: scale(1.05) !important; 
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5) !important;
@@ -53,13 +51,11 @@
             margin-bottom: 10px;
         }
 
-        /* --- COLORES PERSONALIZADOS PARA TEXTO INFERIOR --- */
         .info-custom { color: #0dcaf0 !important; }    
         .warning-custom { color: #ffc107 !important; } 
         .success-custom { color: #198754 !important; } 
         .primary-custom { color: #0d6efd !important; } 
 
-        /* Tanque Estilo Neon */
         #tank-container {
             width: 110px;
             height: 260px;
@@ -96,7 +92,6 @@
             margin-top: 15px;
         }
 
-        /* Tabla y Scrollbar */
         .table { color: var(--text-main); }
         .table thead th {
             border-bottom: 2px solid var(--border-color);
@@ -127,7 +122,7 @@
 <div class="container py-4">
     <div class="row align-items-center mb-4">
         <div class="col-md-8">
-            <h1 class="fw-bold m-0" style="color: var(--accent-blue);">SmartWater Monitor</h1>
+            <h1 class="fw-bold m-0" style="color: var(--accent-blue);">Monitoreo de Tanque de Agua</h1>
             <p class="text-muted m-0">Panel de control de flujo y almacenamiento</p>
         </div>
         <div class="col-md-4 text-md-end">
@@ -142,16 +137,16 @@
     <div class="row">
         <div class="col-md-3 col-sm-6">
             <div class="card p-3 border-top border-info border-4">
-                <div class="card-title-custom">Nivel de Agua</div>
+                <div class="card-title-custom">Estado del Nivel de Agua</div>
                 <h3 id="nivel-texto" class="fw-bold">-- cm</h3>
                 <div class="small info-custom">Lectura ultrasónica</div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="card p-3 border-top border-warning border-4">
-                <div class="card-title-custom">Distancia Sensor</div>
+                <div class="card-title-custom">Nivel de Agua</div>
                 <h3 id="nivel-cm" class="fw-bold">-- cm</h3>
-                <div class="small warning-custom">A la superficie</div>
+                <div class="small warning-custom">Desde la superficie</div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
@@ -182,7 +177,7 @@
 
         <div class="col-md-4">
             <div class="card p-4 h-100 text-center">
-                <h5 class="fw-bold mb-4 text-start">Estado Tanque</h5>
+                <h5 class="fw-bold mb-4 text-start">Estado actual del Tanque</h5>
                 <div id="tank-container">
                     <div id="water-level"></div>
                 </div>
