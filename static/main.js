@@ -9,10 +9,10 @@ function initChart() {
             datasets: [{
                 label: 'Nivel de agua (cm)',
                 data: [],
-                borderColor: '#38bdf8', // Azul brillante para modo oscuro
-                backgroundColor: 'rgba(56, 189, 248, 0.1)', // Relleno suave
+                borderColor: '#38bdf8',
+                backgroundColor: 'rgba(56, 189, 248, 0.1)',
                 fill: true,
-                tension: 0.4 // Curva más suave y estética
+                tension: 0.4
             }]
         },
         options: {
@@ -21,7 +21,7 @@ function initChart() {
             plugins: {
                 legend: {
                     labels: {
-                        color: '#94a3b8' // Color de la leyenda (Nivel de agua)
+                        color: '#94a3b8'
                     }
                 }
             },
@@ -32,13 +32,13 @@ function initChart() {
                     title: { 
                         display: true, 
                         text: "Altura (cm)",
-                        color: '#94a3b8' // Color del título eje Y
+                        color: '#94a3b8'
                     },
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)' // Líneas de fondo tenues
+                        color: 'rgba(255, 255, 255, 0.1)'
                     },
                     ticks: { 
-                        color: '#94a3b8', // Color de los números (12cm, 10cm, etc)
+                        color: '#94a3b8',
                         callback: v => v + " cm" 
                     }
                 },
@@ -46,13 +46,13 @@ function initChart() {
                     title: { 
                         display: true, 
                         text: "Tiempo",
-                        color: '#94a3b8' // Color del título eje X
+                        color: '#94a3b8'
                     },
                     grid: {
-                        display: false // Oculta líneas verticales para mayor limpieza
+                        display: false
                     },
                     ticks: { 
-                        color: '#94a3b8' // Color de las horas/etiquetas
+                        color: '#94a3b8'
                     }
                 }
             }
