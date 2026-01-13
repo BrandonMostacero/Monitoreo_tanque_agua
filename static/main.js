@@ -9,24 +9,51 @@ function initChart() {
             datasets: [{
                 label: 'Nivel de agua (cm)',
                 data: [],
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                borderColor: '#38bdf8', // Azul brillante para modo oscuro
+                backgroundColor: 'rgba(56, 189, 248, 0.1)', // Relleno suave
                 fill: true,
-                tension: 0.3
+                tension: 0.4 // Curva más suave y estética
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#94a3b8' // Color de la leyenda (Nivel de agua)
+                    }
+                }
+            },
             scales: {
                 y: {
                     beginAtZero: true,
                     max: 12,
-                    title: { display: true, text: "Altura (cm)" },
-                    ticks: { callback: v => v + " cm" }
+                    title: { 
+                        display: true, 
+                        text: "Altura (cm)",
+                        color: '#94a3b8' // Color del título eje Y
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)' // Líneas de fondo tenues
+                    },
+                    ticks: { 
+                        color: '#94a3b8', // Color de los números (12cm, 10cm, etc)
+                        callback: v => v + " cm" 
+                    }
                 },
                 x: {
-                    title: { display: true, text: "Tiempo" }
+                    title: { 
+                        display: true, 
+                        text: "Tiempo",
+                        color: '#94a3b8' // Color del título eje X
+                    },
+                    grid: {
+                        display: false // Oculta líneas verticales para mayor limpieza
+                    },
+                    ticks: { 
+                        color: '#94a3b8' // Color de las horas/etiquetas
+                    }
                 }
             }
         }
