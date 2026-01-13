@@ -24,7 +24,7 @@
             padding-top: 20px;
         }
 
-        /* --- ESTILOS DE ANIMACIÓN AGREGADOS --- */
+        /* --- ESTILOS DE ANIMACIÓN --- */
         .card { 
             border: 1px solid var(--border-color); 
             border-radius: 16px; 
@@ -32,17 +32,15 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             margin-bottom: 24px;
             color: var(--text-main);
-            
-            /* Animación base */
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease !important;
             cursor: default;
         }
 
-        /* Efecto al pasar el mouse */
+        /* Borde blanco al pasar el mouse */
         .card:hover {
-            transform: scale(1.05) !important; /* Agrandado del bloque */
+            transform: scale(1.05) !important; 
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5) !important;
-            border-color: #ffffff !important; /* Resalte de borde */
+            border-color: #ffffff !important; 
             z-index: 10;
         }
 
@@ -55,6 +53,12 @@
             margin-bottom: 10px;
         }
 
+        /* --- COLORES PERSONALIZADOS PARA TEXTO INFERIOR --- */
+        .info-custom { color: #0dcaf0 !important; }    
+        .warning-custom { color: #ffc107 !important; } 
+        .success-custom { color: #198754 !important; } 
+        .primary-custom { color: #0d6efd !important; } 
+
         /* Tanque Estilo Neon */
         #tank-container {
             width: 110px;
@@ -66,12 +70,12 @@
             background-color: #0f172a;
             box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
             overflow: hidden;
-            /* Animación para el contenedor del tanque */
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, border-color 0.3s ease;
         }
         
         #tank-container:hover {
             transform: scale(1.05);
+            border-color: #ffffff;
         }
 
         #water-level {
@@ -92,7 +96,7 @@
             margin-top: 15px;
         }
 
-        /* Tabla en Modo Oscuro */
+        /* Tabla y Scrollbar */
         .table { color: var(--text-main); }
         .table thead th {
             border-bottom: 2px solid var(--border-color);
@@ -103,7 +107,6 @@
         .table tbody tr { border-bottom: 1px solid var(--border-color); }
         .table-hover tbody tr:hover {
             background-color: rgba(255, 255, 255, 0.05);
-            color: var(--text-main);
         }
 
         .alert-error-conexion { 
@@ -141,28 +144,28 @@
             <div class="card p-3 border-top border-info border-4">
                 <div class="card-title-custom">Nivel de Agua</div>
                 <h3 id="nivel-texto" class="fw-bold">-- cm</h3>
-                <div class="small text-info">Lectura ultrasónica</div>
+                <div class="small info-custom">Lectura ultrasónica</div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="card p-3 border-top border-warning border-4">
                 <div class="card-title-custom">Distancia Sensor</div>
                 <h3 id="nivel-cm" class="fw-bold">-- cm</h3>
-                <div class="small text-muted">A la superficie</div>
+                <div class="small warning-custom">A la superficie</div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="card p-3 border-top border-success border-4">
                 <div class="card-title-custom">Bomba Relé</div>
                 <h3 id="bomba-status" class="fw-bold">--</h3>
-                <div class="small text-muted">Estado del motor</div>
+                <div class="small success-custom">Estado del motor</div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="card p-3 border-top border-primary border-4">
                 <div class="card-title-custom">Último Dato</div>
                 <h3 id="ultima-hora" class="fw-bold">--</h3>
-                <div id="ultima-fecha" class="small text-muted">--/--/--</div>
+                <div id="ultima-fecha" class="small primary-custom">--/--/--</div>
             </div>
         </div>
     </div>
