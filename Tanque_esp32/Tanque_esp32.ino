@@ -20,6 +20,8 @@ String serverUrl = "http://TU_IP:5000/api/update";
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
+bool bomba = false;
+
 float readDistance() {
   digitalWrite(TRIG, LOW);
   delayMicroseconds(2);
@@ -59,28 +61,32 @@ void setup() {
   lcd.clear();
 }
 
-void loop() {
+void loop() {   
   float D_SENSOR = readDistance() - 2;
   float nivel_cm = H_TANQUE - D_SENSOR;
-  
+
   if (nivel_cm < 0) nivel_cm = 0;
   if (nivel_cm > H_TANQUE) nivel_cm = H_TANQUE;
 
   int capacidad = (nivel_cm * 100) / H_TANQUE;
-  String nivel;
-  bool bomba = false;
 
+  String nivel;
   if (capacidad >= 75) {
     nivel = "ALTO";
-    bomba = false;
   } 
   else if (capacidad >= 50) {
     nivel = "MEDIO";
-    bomba = false;
   } 
   else {
     nivel = "BAJO";
+  }
+
+  if (!bomba && capacidad <= 25) {
     bomba = true;
+  }
+
+  if (bomba && capacidad >= 90) {
+    bomba = false;
   }
 
   digitalWrite(RELE_PIN, bomba ? HIGH : LOW);
@@ -89,11 +95,13 @@ void loop() {
   lcd.print("Nivel: ");
   lcd.print(nivel_cm, 2);
   lcd.print(" cm   ");
- 
+
   lcd.setCursor(0, 1);
   lcd.print(capacidad);
-  lcd.print("% B:");
-  lcd.print(bomba ? "ON   " : "OFF  ");
+  lcd.print("% ");
+  lcd.print(nivel);
+  lcd.print(" B:");
+  lcd.print(bomba ? "ON " : "OFF");
 
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
@@ -106,7 +114,7 @@ void loop() {
       "\",\"bomba\":" + String(bomba) +
       ",\"capacidad\":" + String(capacidad) +
     "}";
-    
+
     Serial.println("Enviando JSON:");
     Serial.println(json);
 
