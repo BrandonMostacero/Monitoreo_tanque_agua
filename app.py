@@ -1,32 +1,12 @@
 from flask import Flask, render_template, jsonify, request
-import sqlite3
+from flask_pymongo import PyMongo
+from datetime import datetime
 import os
 
-base_dir = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 
-DATABASE = os.path.join(base_dir, 'tanque.db')
-
-def init_db():
-    try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS registros (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                nivel_cm REAL,
-                nivel TEXT,
-                capacidad INTEGER,
-                bomba INTEGER
-            )
-        ''')
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print(f"Error inicializando DB: {e}")
-
-init_db()
+app.config["MONGO_URI"] = os.environ.get("MONGO_URI", "mongodb://localhost:27017/tanque_db")
+mongo = PyMongo(app)
 
 @app.route('/')
 def index():
@@ -35,11 +15,8 @@ def index():
 @app.route('/api/data')
 def get_data():
     try:
-        conn = sqlite3.connect(DATABASE)
-        conn.row_factory = sqlite3.Row
-        query = "SELECT fecha, nivel_cm, nivel, capacidad, bomba FROM registros ORDER BY id DESC LIMIT 15"
-        registros = conn.execute(query).fetchall()
-        conn.close()
+        cursor = mongo.db.registros.find().sort("fecha", -1).limit(15)
+        registros = list(cursor)
 
         if not registros:
             return jsonify({"error": "No hay datos"}), 404
@@ -48,14 +25,20 @@ def get_data():
         registros_cronologicos = registros[::-1]
         
         return jsonify({
-            "nivel_texto": ultimo['nivel'],
-            "nivel_distancia": ultimo['nivel_cm'],
-            "capacidad_val": ultimo['capacidad'],
-            "estado_bomba": "ON" if ultimo['bomba'] == 1 else "OFF",
-            "ultima_actualizacion": ultimo['fecha'],
-            "historial_tiempos": [r['fecha'].split()[-1] for r in registros_cronologicos],
+            "nivel_texto": ultimo.get('nivel'),
+            "nivel_distancia": ultimo.get('nivel_cm'),
+            "capacidad_val": ultimo.get('capacidad'),
+            "estado_bomba": "ON" if ultimo.get('bomba') == 1 else "OFF",
+            "ultima_actualizacion": ultimo.get('fecha').strftime('%Y-%m-%d %H:%M:%S'),
+            "historial_tiempos": [r['fecha'].strftime('%H:%M:%S') for r in registros_cronologicos],
             "historial_niveles": [r['nivel'] for r in registros_cronologicos],
-            "tabla": [dict(r) for r in registros]
+            "tabla": [{
+                "fecha": r['fecha'].strftime('%Y-%m-%d %H:%M:%S'),
+                "nivel_cm": r['nivel_cm'],
+                "nivel": r['nivel'],
+                "capacidad": r['capacidad'],
+                "bomba": r['bomba']
+            } for r in registros]
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -64,21 +47,20 @@ def get_data():
 def update_data():
     try:
         content = request.json
-        nivel_cm = content.get('nivel_cm')
-        nivel = content.get('nivel')
-        capacidad = content.get('capacidad')
-        bomba = 1 if content.get('bomba') else 0
         
-        conn = sqlite3.connect(DATABASE)
-        conn.execute("""
-            INSERT INTO registros (fecha, nivel_cm, nivel, capacidad, bomba) 
-            VALUES (datetime('now', 'localtime'), ?, ?, ?, ?)
-        """, (nivel_cm, nivel, capacidad, bomba))
-        conn.commit()
-        conn.close()
+        nuevo_registro = {
+            "fecha": datetime.now(),
+            "nivel_cm": content.get('nivel_cm'),
+            "nivel": content.get('nivel'),
+            "capacidad": content.get('capacidad'),
+            "bomba": 1 if content.get('bomba') else 0
+        }
+        
+        mongo.db.registros.insert_one(nuevo_registro)
         return jsonify({"status": "success"}), 201
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
     
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
