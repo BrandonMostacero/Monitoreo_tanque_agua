@@ -1,12 +1,14 @@
 from flask import Flask, render_template, jsonify, request
-from flask_pymongo import PyMongo
+from pymongo import MongoClient
 from datetime import datetime
 import os
 
 app = Flask(__name__)
 
-app.config["MONGO_URI"] = os.environ.get("MONGO_URI", "mongodb://localhost:27017/tanque_db")
-mongo = PyMongo(app)
+MONGO_URI = os.environ.get("mongodb://localhost:27017/tanque_db")
+client = MongoClient(MONGO_URI)
+db = client["tanque_db"]
+coleccion = db["registros"]
 
 @app.route('/')
 def index():
@@ -15,57 +17,53 @@ def index():
 @app.route('/api/data')
 def get_data():
     try:
-        cursor = mongo.db.registros.find().sort("fecha", -1).limit(15)
-        registros = list(cursor)
+        registros = list(
+            coleccion.find({}, {"_id": 0})
+            .sort("fecha", -1)
+            .limit(15)
+        )
 
         if not registros:
             return jsonify({"error": "No hay datos"}), 404
 
         ultimo = registros[0]
         registros_cronologicos = registros[::-1]
-        
+
         return jsonify({
-            "nivel_texto": ultimo.get('nivel'),
-            "nivel_distancia": ultimo.get('nivel_cm'),
-            "capacidad_val": ultimo.get('capacidad'),
-            "estado_bomba": "ON" if ultimo.get('bomba') == 1 else "OFF",
-            "ultima_actualizacion": format_fecha(ultimo.get('fecha')),
-            "historial_tiempos": [format_fecha(r.get('fecha'))[-8:] for r in registros_cronologicos],
-            "historial_niveles": [r['nivel'] for r in registros_cronologicos],
-            "tabla": [{
-                "fecha": format_fecha(r.get('fecha')),
-                "nivel_cm": r['nivel_cm'],
-                "nivel": r['nivel'],
-                "capacidad": r['capacidad'],
-                "bomba": r['bomba']
-            } for r in registros]
+            "nivel_texto": ultimo["nivel"],
+            "nivel_distancia": ultimo["nivel_cm"],
+            "capacidad_val": ultimo["capacidad"],
+            "estado_bomba": "ON" if ultimo["bomba"] == 1 else "OFF",
+            "ultima_actualizacion": ultimo["fecha"].strftime("%Y-%m-%d %H:%M:%S"),
+            "historial_tiempos": [
+                r["fecha"].strftime("%H:%M:%S") for r in registros_cronologicos
+            ],
+            "historial_niveles": [r["nivel"] for r in registros_cronologicos],
+            "tabla": registros
         })
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/update', methods=['POST'])
 def update_data():
     try:
-        content = request.get_json(force=True)
-        
-        nuevo_registro = {
+        content = request.json
+
+        documento = {
             "fecha": datetime.now(),
-            "nivel_cm": content.get('nivel_cm'),
-            "nivel": content.get('nivel'),
-            "capacidad": content.get('capacidad'),
-            "bomba": 1 if content.get('bomba') else 0
+            "nivel_cm": content.get("nivel_cm"),
+            "nivel": content.get("nivel"),
+            "capacidad": content.get("capacidad"),
+            "bomba": 1 if content.get("bomba") else 0
         }
-        
-        mongo.db.registros.insert_one(nuevo_registro)
+
+        coleccion.insert_one(documento)
+
         return jsonify({"status": "success"}), 201
+
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
-    
-def format_fecha(f):
-    if isinstance(f, datetime):
-        return f.strftime('%Y-%m-%d %H:%M:%S')
-    return "N/A"
-    
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
