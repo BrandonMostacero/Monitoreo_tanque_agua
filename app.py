@@ -5,7 +5,7 @@ import os
 
 app = Flask(__name__)
 
-MONGO_URI = os.environ.get("mongodb://localhost:27017/tanque_db")
+MONGO_URI = os.environ.get("MONGO_URI")
 client = MongoClient(MONGO_URI)
 db = client["tanque_db"]
 coleccion = db["registros"]
