@@ -10,6 +10,22 @@ client = MongoClient(MONGO_URI)
 db = client["tanque_db"]
 coleccion = db["registros"]
 
+print("MONGO_URI =", MONGO_URI)
+
+if not MONGO_URI:
+    raise Exception("❌ MONGO_URI NO DEFINIDA EN RENDER")
+
+client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+
+try:
+    client.server_info()
+    print("✅ Conectado a MongoDB")
+except Exception as e:
+    raise Exception(f"❌ Error conectando a MongoDB: {e}")
+
+db = client["tanque_db"]
+coleccion = db["registros"]
+
 @app.route('/')
 def index():
     return render_template('index.html')
