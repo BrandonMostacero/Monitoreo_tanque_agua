@@ -29,11 +29,11 @@ def get_data():
             "nivel_distancia": ultimo.get('nivel_cm'),
             "capacidad_val": ultimo.get('capacidad'),
             "estado_bomba": "ON" if ultimo.get('bomba') == 1 else "OFF",
-            "ultima_actualizacion": ultimo.get('fecha').strftime('%Y-%m-%d %H:%M:%S'),
-            "historial_tiempos": [r['fecha'].strftime('%H:%M:%S') for r in registros_cronologicos],
+            "ultima_actualizacion": format_fecha(ultimo.get('fecha')),
+            "historial_tiempos": [format_fecha(r.get('fecha'))[-8:] for r in registros_cronologicos],
             "historial_niveles": [r['nivel'] for r in registros_cronologicos],
             "tabla": [{
-                "fecha": r['fecha'].strftime('%Y-%m-%d %H:%M:%S'),
+                "fecha": format_fecha(r.get('fecha')),
                 "nivel_cm": r['nivel_cm'],
                 "nivel": r['nivel'],
                 "capacidad": r['capacidad'],
@@ -60,6 +60,11 @@ def update_data():
         return jsonify({"status": "success"}), 201
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+    
+def format_fecha(f):
+    if isinstance(f, datetime):
+        return f.strftime('%Y-%m-%d %H:%M:%S')
+    return "N/A"
     
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
