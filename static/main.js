@@ -1,4 +1,5 @@
 let chart;
+let estadoManual = false;
 
 function initChart() {
     const ctx = document.getElementById('lineChart').getContext('2d');
@@ -113,4 +114,25 @@ document.addEventListener('DOMContentLoaded', () => {
     initChart();
     fetchData();
     setInterval(fetchData, 2000);
+});
+
+document.getElementById('btn-bomba').addEventListener('click', async () => {
+    estadoManual = !estadoManual;
+
+    await fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            modo: 'manual',
+            bomba: estadoManual
+        })
+    });
+
+    document.getElementById('btn-bomba').innerText =
+        estadoManual ? 'DESACTIVAR BOMBA' : 'ACTIVAR BOMBA';
+});
+
+fetch('/api/control', {
+    method: 'POST',
+    body: JSON.stringify({ modo: 'auto' })
 });
