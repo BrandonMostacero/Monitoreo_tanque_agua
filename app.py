@@ -46,7 +46,7 @@ def get_data():
 @app.route('/api/update', methods=['POST'])
 def update_data():
     try:
-        content = request.json
+        content = request.get_json(force=True)
         
         nuevo_registro = {
             "fecha": datetime.now(),
