@@ -11,6 +11,31 @@ db = client["tanque_db"]
 coleccion = db["registros"]
 
 @app.route('/')
+def home():
+    return render_template('home.html')
+
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('index.html')
+
+
+@app.route('/registros')
+def registros():
+    return render_template('registros.html')
+
+
+@app.route('/api/registros')
+def api_registros():
+    try:
+        datos = list(
+            coleccion.find({}, {"_id": 0}).sort("fecha", -1)
+        )
+        return jsonify(datos), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/')
 def index():
     return render_template('index.html')
 
@@ -66,4 +91,4 @@ def update_data():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000))
