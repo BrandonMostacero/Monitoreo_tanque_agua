@@ -9,6 +9,7 @@ MONGO_URI = os.environ.get("MONGO_URI")
 client = MongoClient(MONGO_URI)
 db = client["tanque_db"]
 coleccion = db["registros"]
+control = db["control"]
 
 @app.route('/')
 def home():
@@ -77,7 +78,7 @@ def update_data():
 
         documento = {
             "fecha": datetime.now(),
-            "nivel_cm": content.get("nivel_cm"),
+            "nivel_cm": content.get("nivel_cm"),    
             "nivel": content.get("nivel"),
             "capacidad": content.get("capacidad"),
             "bomba": 1 if content.get("bomba") else 0
@@ -89,6 +90,41 @@ def update_data():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+    
+@app.route('/api/control', methods=['POST'])
+def control_bomba():
+    data = request.json
+
+    modo = data.get('modo')
+    bomba = data.get('bomba')
+
+    control.update_one(
+        {"_id": "control"},
+        {"$set": {
+            "modo": modo,
+            "bomba_manual": 1 if bomba else 0
+        }},
+        upsert=True
+    )
+
+    return jsonify({"status": "ok"})
+
+@app.route('/api/control', methods=['GET'])
+def get_control():
+    doc = control.find_one({"_id": "control"}) or {}
+    return jsonify({
+        "modo": doc.get("modo", "auto"),
+        "bomba_manual": doc.get("bomba_manual", 0)
+    })
+
+@app.route('/api/control', methods=['GET'])
+def get_control():
+    doc = control.find_one({"_id": "control"}) or {}
+    return jsonify({
+        "modo": doc.get("modo", "auto"),
+        "bomba_manual": doc.get("bomba_manual", 0)
+    })
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
