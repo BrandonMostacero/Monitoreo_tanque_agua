@@ -4,19 +4,63 @@
     <meta charset="UTF-8">
     <title>Monitoreo de Tanque</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #0f172a;       
+            --card-dark: #1e293b;     
+            --text-main: #f1f5f9;     
+            --accent-blue: #38bdf8;   
+            --border-color: #334155;
+        }
+
+        body { 
+            background-color: var(--bg-dark); 
+            font-family: 'Inter', sans-serif; 
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card { 
+            border: 1px solid var(--border-color); 
+            border-radius: 16px; 
+            background: var(--card-dark);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            color: var(--text-main);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.3s ease, 
+                        border-color 0.3s ease !important;
+            cursor: pointer;
+            width: 280px;
+            text-align: center;
+        }
+
+        .card:hover {
+            transform: scale(1.05) !important; 
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5) !important;
+            border-color: #ffffff !important; 
+            z-index: 10;
+        }
+    </style>
 </head>
-<body class="bg-dark text-light">
 
-<div class="container vh-100 d-flex align-items-center justify-content-center">
-    <div class="card bg-secondary text-light p-4 text-center shadow-lg" style="max-width: 400px;">
-        <h3 class="mb-4">Sistema de Monitoreo</h3>
+<body>
 
-        <a href="/dashboard" class="btn btn-info mb-3 w-100">
-            📊 Ver Dashboard
+<div class="container text-center">
+    <h1 class="fw-bold mb-4" style="color: var(--accent-blue);">
+        Monitoreo de Tanque de Agua
+    </h1>
+
+    <div class="d-flex flex-column gap-4 align-items-center">
+        <a href="/dashboard" class="card p-4 border-top border-info border-4 text-decoration-none">
+            <h4 class="fw-bold mb-0">Ver Dashboard</h4>
         </a>
 
-        <a href="/registros" class="btn btn-warning w-100">
-            📁 Registro Completo
+        <a href="/registros" class="card p-4 border-top border-warning border-4 text-decoration-none">
+            <h4 class="fw-bold mb-0">Registro Completo</h4>
         </a>
     </div>
 </div>
