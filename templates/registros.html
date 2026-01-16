@@ -4,53 +4,116 @@
     <meta charset="UTF-8">
     <title>Registro Completo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-dark text-light">
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Registro Completo de la Base de Datos</h3>
-        <a href="/" class="btn btn-outline-light">⬅ Volver</a>
+    <style>
+        :root {
+            --bg-dark: #0f172a;       
+            --card-dark: #1e293b;     
+            --text-main: #f1f5f9;     
+            --accent-blue: #38bdf8;   
+            --border-color: #334155;
+        }
+
+        body { 
+            background-color: var(--bg-dark); 
+            font-family: 'Inter', sans-serif; 
+            color: var(--text-main);
+            padding: 40px 0;
+        }
+
+        .card { 
+            border: 1px solid var(--border-color); 
+            border-radius: 16px; 
+            background: var(--card-dark);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            color: var(--text-main);
+        }
+
+        h1 {
+            color: var(--accent-blue);
+        }
+
+        table {
+            color: var(--text-main);
+        }
+
+        thead {
+            background-color: #020617;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(56, 189, 248, 0.1);
+        }
+
+        .btn-custom {
+            border-radius: 12px;
+            padding: 8px 18px;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">Registro Completo del Tanque</h1>
+        <p class="text-secondary">Historial de mediciones almacenadas</p>
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-outline-info btn-custom">
+                ⬅ Volver al inicio
+            </a>
+        </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-dark table-hover align-middle">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Nivel (cm)</th>
-                    <th>Estado</th>
-                    <th>Capacidad (%)</th>
-                    <th>Bomba</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-completa"></tbody>
-        </table>
+
+    <div class="card p-4">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Nivel (cm)</th>
+                        <th>Estado</th>
+                        <th>Capacidad (%)</th>
+                        <th>Bomba</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-registros">
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-async function cargarRegistros() {
-    const res = await fetch('/api/registros');
-    const data = await res.json();
+fetch('/api/data')
+    .then(res => res.json())
+    .then(data => {
+        const tbody = document.getElementById('tabla-registros');
+        tbody.innerHTML = '';
 
-    const tbody = document.getElementById('tabla-completa');
-    tbody.innerHTML = data.map(r => `
-        <tr>
-            <td>${r.fecha || '--'}</td>
-            <td>${r.nivel_cm ?? '--'}</td>
-            <td>${r.nivel ?? '--'}</td>
-            <td>${r.capacidad ?? '--'}%</td>
-            <td>
-                <span class="badge ${r.bomba ? 'bg-danger' : 'bg-success'}">
-                    ${r.bomba ? 'ON' : 'OFF'}
-                </span>
-            </td>
-        </tr>
-    `).join('');
-}
-
-cargarRegistros();
+        data.tabla.forEach(r => {
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+                <td>${r.fecha}</td>
+                <td>${r.nivel_cm.toFixed(2)}</td>
+                <td>${r.nivel}</td>
+                <td>${r.capacidad}</td>
+                <td>
+                    <span class="badge ${r.bomba ? 'bg-success' : 'bg-secondary'}">
+                        ${r.bomba ? 'ON' : 'OFF'}
+                    </span>
+                </td>
+            `;
+            tbody.appendChild(fila);
+        });
+    })
+    .catch(err => console.error(err));
 </script>
 
 </body>
