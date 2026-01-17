@@ -145,29 +145,40 @@
         <strong>Error Crítico:</strong> Perdimos comunicación con el sensor.
     </div>
 
-    <div class="row">
-        <div class="col-md-3 col-sm-6">
+    <div class="row justify-content-center">
+        <div class="col-md-2 col-sm-6">
             <div class="card p-3 border-top border-info border-4">
                 <div class="card-title-custom">Estado del Nivel de Agua</div>
-                <h3 id="nivel-texto" class="fw-bold">-- cm</h3>
+                <h3 id="nivel-texto" class="fw-bold">--</h3>
                 <div class="small info-custom">Lectura ultrasónica</div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
+
+        <div class="col-md-2 col-sm-6">
             <div class="card p-3 border-top border-warning border-4">
                 <div class="card-title-custom">Nivel de Agua</div>
                 <h3 id="nivel-cm" class="fw-bold">-- cm</h3>
-                <div class="small warning-custom">Desde la basde del tanque</div>
+                <div class="small warning-custom">Desde la base del tanque</div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
+
+        <div class="col-md-2 col-sm-6">
             <div class="card p-3 border-top border-success border-4">
                 <div class="card-title-custom">Bomba Relé</div>
                 <h3 id="bomba-status" class="fw-bold">--</h3>
                 <div class="small success-custom">Estado del motor</div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
+
+        <div class="col-md-2 col-sm-6">
+            <div class="card p-3 border-top border-warning border-4">
+                <div class="card-title-custom">Modo de Bomba</div>
+                <h3 id="modo-bomba" class="fw-bold">--</h3>
+                <div class="small warning-custom">Control activo</div>
+            </div>
+        </div>
+
+        <div class="col-md-2 col-sm-6">
             <div class="card p-3 border-top border-primary border-4">
                 <div class="card-title-custom">Último Dato</div>
                 <h3 id="ultima-hora" class="fw-bold">--</h3>
