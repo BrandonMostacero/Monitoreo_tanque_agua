@@ -12,11 +12,8 @@ float H_TANQUE = 9.5;
 const char* ssid = "NOMBRE_WIFI";
 const char* password = "CONTRASEÑA_WIFI";
 
-// Para determinar tu IP:
-// Abrir CMD y escribir ipconfig
-// La IP que se utilizara es la IPv4
 
-String serverUrl = "http://TU_IP:5000/api/update";
+String serverUrl = "http://SERVER_RENDER/api/update";
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
