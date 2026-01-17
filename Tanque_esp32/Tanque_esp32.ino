@@ -12,7 +12,6 @@ float H_TANQUE = 9.5;
 const char* ssid = "NOMBRE_WIFI";
 const char* password = "CONTRASEÑA_WIFI";
 
-
 String serverUrl = "http://SERVER_RENDER/api/update";
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
