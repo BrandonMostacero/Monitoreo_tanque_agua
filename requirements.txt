@@ -2,3 +2,5 @@ flask
 flask-pymongo
 dnspython
 gunicorn
+pandas
+openpyxl
