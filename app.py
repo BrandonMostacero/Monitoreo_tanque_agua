@@ -11,6 +11,7 @@ MONGO_URI = os.environ.get("MONGO_URI")
 client = MongoClient(MONGO_URI)
 db = client["tanque_db"]
 coleccion = db["registros"]
+control = db["control"]
 
 @app.route('/')
 def home():
@@ -115,6 +116,29 @@ def export_excel():
         download_name="registros_tanque.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+@app.route("/api/control", methods=["POST"])
+def set_control():
+    data = request.json
+
+    modo = data.get("modo")
+    bomba = data.get("bomba", 0)
+
+    control.update_one(
+        {"_id": "control"},
+        {"$set": {
+            "modo": modo,
+            "bomba_manual": bomba
+        }},
+        upsert=True
+    )
+
+    return jsonify({"status": "ok"})
+
+@app.route("/api/control", methods=["GET"])
+def get_control():
+    doc = control.find_one({"_id": "control"}, {"_id": 0})
+    return jsonify(doc)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
