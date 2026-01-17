@@ -95,7 +95,7 @@ def update_data():
     
 @app.route('/api/export/excel')
 def export_excel():
-    registros = list(collection.find({}, {"_id": 0}))
+    registros = list(coleccion.find({}, {"_id": 0}))
 
     if not registros:
         return {"error": "No hay datos"}, 404
