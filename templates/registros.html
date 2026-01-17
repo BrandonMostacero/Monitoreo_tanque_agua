@@ -123,7 +123,7 @@ let registros = [];
 let paginaActual = 1;
 const porPagina = 10;
 
-fetch('/api/data')
+fetch('/api/registros')
     .then(res => res.json())
     .then(data => {
         registros = data.tabla;
@@ -182,5 +182,6 @@ document.getElementById('nextBtn').addEventListener('click', () => {
     }
 });
 </script>
+
 </body>
 </html>
