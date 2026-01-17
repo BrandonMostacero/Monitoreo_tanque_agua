@@ -84,9 +84,14 @@
         <h1>Registro Completo del Tanque</h1>
         <p class="text-secondary">Historial de mediciones almacenadas</p>
 
-        <a href="/" class="btn btn-outline-info btn-custom mt-3">
-            ⬅ Volver al inicio
-        </a>
+        <div class="d-flex flex-column flex-sm-row justify-content-center align-items-center gap-3 mt-4">
+            <a href="/api/export/excel" class="btn btn-success px-4 py-2 shadow-sm">
+                Descargar Excel
+            </a>
+            <a href="/" class="btn btn-outline-info btn-custom px-4 py-2 shadow-sm">
+                ⬅ Volver al inicio
+            </a>
+        </div>
     </div>
 
     <div class="card p-3 p-md-4">
@@ -133,6 +138,5 @@ fetch('/api/data')
     })
     .catch(err => console.error(err));
 </script>
-
 </body>
 </html>
