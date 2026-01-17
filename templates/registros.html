@@ -108,35 +108,79 @@
                 </thead>
                 <tbody id="tabla-registros"></tbody>
             </table>
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-4">
+                <button id="prevBtn" class="btn btn-outline-light btn-sm">⬅ Anterior</button>
+                <span id="pageInfo" class="text-secondary small"></span>
+                <button id="nextBtn" class="btn btn-outline-light btn-sm">Siguiente ➡</button>
+            </div>
         </div>
     </div>
 
 </div>
 
 <script>
+let registros = [];
+let paginaActual = 1;
+const porPagina = 10;
+
 fetch('/api/data')
     .then(res => res.json())
     .then(data => {
-        const tbody = document.getElementById('tabla-registros');
-        tbody.innerHTML = '';
-
-        data.tabla.forEach(r => {
-            const fila = document.createElement('tr');
-            fila.innerHTML = `
-                <td>${r.fecha}</td>
-                <td>${Number(r.nivel_cm).toFixed(2)}</td>
-                <td>${r.nivel}</td>
-                <td>${r.capacidad}</td>
-                <td>
-                    <span class="badge ${r.bomba ? 'bg-danger' : 'bg-success'}">
-                        ${r.bomba ? 'ON' : 'OFF'}
-                    </span>
-                </td>
-            `;
-            tbody.appendChild(fila);
-        });
+        registros = data.tabla;
+        renderTabla();
     })
     .catch(err => console.error(err));
+
+function renderTabla() {
+    const tbody = document.getElementById('tabla-registros');
+    tbody.innerHTML = '';
+
+    const inicio = (paginaActual - 1) * porPagina;
+    const fin = inicio + porPagina;
+    const paginaDatos = registros.slice(inicio, fin);
+
+    paginaDatos.forEach(r => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+            <td>${r.fecha}</td>
+            <td>${Number(r.nivel_cm).toFixed(2)}</td>
+            <td>${r.nivel}</td>
+            <td>${r.capacidad}</td>
+            <td>
+                <span class="badge ${r.bomba ? 'bg-danger' : 'bg-success'}">
+                    ${r.bomba ? 'ON' : 'OFF'}
+                </span>
+            </td>
+        `;
+        tbody.appendChild(fila);
+    });
+
+    actualizarControles();
+}
+
+function actualizarControles() {
+    const totalPaginas = Math.ceil(registros.length / porPagina);
+    document.getElementById('pageInfo').textContent =
+        `Página ${paginaActual} de ${totalPaginas}`;
+
+    document.getElementById('prevBtn').disabled = paginaActual === 1;
+    document.getElementById('nextBtn').disabled = paginaActual === totalPaginas;
+}
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+    if (paginaActual > 1) {
+        paginaActual--;
+        renderTabla();
+    }
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+    const totalPaginas = Math.ceil(registros.length / porPagina);
+    if (paginaActual < totalPaginas) {
+        paginaActual++;
+        renderTabla();
+    }
+});
 </script>
 </body>
 </html>
