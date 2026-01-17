@@ -7,7 +7,7 @@ from io import BytesIO
 
 app = Flask(__name__)
 
-MONGO_URI = os.environ.get("mongodb+srv://bmmostaceros_db_user:rrJVuqvtDGcrQaPu@monitoreo.lnv2emj.mongodb.net/tanque_db?retryWrites=true&w=majority&appName=Monitoreo")
+MONGO_URI = os.environ.get("MONGO_URI")
 client = MongoClient(MONGO_URI)
 db = client["tanque_db"]
 coleccion = db["registros"]
