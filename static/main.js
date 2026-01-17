@@ -114,26 +114,3 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchData();
     setInterval(fetchData, 2000);
 });
-
-function enviarControl(modo, bomba = 0) {
-    fetch("/api/control", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            modo: modo,
-            bomba: bomba
-        })
-    });
-}
-
-btnManualOn.onclick  = () => enviarControl("manual", 1);
-btnManualOff.onclick = () => enviarControl("manual", 0);
-btnAuto.onclick      = () => enviarControl("auto");
-
-const modoBomba = data.modo === "manual" ? "MANUAL" : "AUTOMÁTICO";
-const modoElem = document.getElementById("modo-bomba");
-
-modoElem.textContent = modoBomba;
-
-modoElem.classList.remove("text-success", "text-warning");
-modoElem.classList.add(data.modo === "manual" ? "text-warning" : "text-success");
