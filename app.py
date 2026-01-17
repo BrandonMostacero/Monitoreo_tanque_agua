@@ -95,16 +95,24 @@ def update_data():
     
 @app.route('/api/export/excel')
 def export_excel():
-    registros = list(coleccion.find({}, {"_id": 0}))  # sin _id
+    registros = list(collection.find({}, {"_id": 0}))
 
     if not registros:
         return {"error": "No hay datos"}, 404
 
     df = pd.DataFrame(registros)
+    df["fecha"] = pd.to_datetime(df["fecha"])
 
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Registros')
+
+        ws = writer.sheets['Registros']
+        ws.column_dimensions['A'].width = 22
+        ws.column_dimensions['B'].width = 12
+        ws.column_dimensions['C'].width = 12
+        ws.column_dimensions['D'].width = 12
+        ws.column_dimensions['E'].width = 10
 
     output.seek(0)
 
