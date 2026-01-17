@@ -1,5 +1,4 @@
 let chart;
-let estadoManual = false;
 
 function initChart() {
     const ctx = document.getElementById('lineChart').getContext('2d');
@@ -116,23 +115,17 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(fetchData, 2000);
 });
 
-document.getElementById('btn-bomba').addEventListener('click', async () => {
-    estadoManual = !estadoManual;
-
-    await fetch('/api/control', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+function enviarControl(modo, bomba = 0) {
+    fetch("/api/control", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            modo: 'manual',
-            bomba: estadoManual
+            modo: modo,
+            bomba: bomba
         })
     });
+}
 
-    document.getElementById('btn-bomba').innerText =
-        estadoManual ? 'DESACTIVAR BOMBA' : 'ACTIVAR BOMBA';
-});
-
-fetch('/api/control', {
-    method: 'POST',
-    body: JSON.stringify({ modo: 'auto' })
-});
+btnManualOn.onclick  = () => enviarControl("manual", 1);
+btnManualOff.onclick = () => enviarControl("manual", 0);
+btnAuto.onclick      = () => enviarControl("auto");
