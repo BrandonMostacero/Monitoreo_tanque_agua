@@ -92,7 +92,12 @@ def update_data():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
-    
+
+@app.route('/api/registros')
+def get_all_registros():
+    registros = list(coleccion.find({}, {"_id": 0}).sort("fecha", -1))
+    return jsonify(registros)
+
 @app.route('/api/export/excel')
 def export_excel():
     registros = list(coleccion.find({}, {"_id": 0}))
