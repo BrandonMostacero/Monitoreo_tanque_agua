@@ -126,7 +126,7 @@ const porPagina = 10;
 fetch('/api/registros')
     .then(res => res.json())
     .then(data => {
-        registros = data.tabla;
+        registros = data;
         renderTabla();
     })
     .catch(err => console.error(err));
