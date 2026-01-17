@@ -2,6 +2,9 @@ from flask import Flask, render_template, jsonify, request
 from pymongo import MongoClient
 from datetime import datetime
 import os
+import pandas as pd
+from flask import send_file
+from io import BytesIO
 
 app = Flask(__name__)
 
@@ -89,6 +92,28 @@ def update_data():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+    
+@app.route('/api/export/excel')
+def export_excel():
+    registros = list(coleccion.find({}, {"_id": 0}))  # sin _id
+
+    if not registros:
+        return {"error": "No hay datos"}, 404
+
+    df = pd.DataFrame(registros)
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Registros')
+
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="registros_tanque.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
