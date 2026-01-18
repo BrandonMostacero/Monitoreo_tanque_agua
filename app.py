@@ -12,6 +12,10 @@ client = MongoClient(MONGO_URI)
 db = client["tanque_db"]
 coleccion = db["registros"]
 
+estado_control = {
+    "calibrar": False
+}
+
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -85,6 +89,20 @@ def update_data():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+
+@app.route('/api/control')
+def control():
+    respuesta = {
+        "calibrar": estado_control["calibrar"]
+    }
+
+    estado_control["calibrar"] = False
+    return jsonify(respuesta)
+
+@app.route('/api/calibrar', methods=['POST'])
+def solicitar_calibracion():
+    estado_control["calibrar"] = True
+    return jsonify({"status": "ok"})
 
 @app.route('/api/export/excel')
 def export_excel():
