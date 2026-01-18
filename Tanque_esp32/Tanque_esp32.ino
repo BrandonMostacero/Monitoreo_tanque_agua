@@ -9,11 +9,11 @@
 #define TRIG 33
 #define ECHO 32
 
-const char* ssid = "CHIQUITINA";
-const char* password = "MAURMOS1980";
+const char* ssid = "NOMBRE_WIFI";
+const char* password = "CLAVE_WIFI";
 
-String serverUpdateUrl = "https://monitoreo-tanque.onrender.com/api/update";
-String serverConfigUrl = "https://monitoreo-tanque.onrender.com/api/control";
+String serverUpdateUrl = "https://SERVER_RENDER.com/api/update";
+String serverConfigUrl = "https://SERVER_RENDER.com/api/control";
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Preferences prefs;
