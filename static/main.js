@@ -109,8 +109,28 @@ async function fetchData() {
     }
 }
 
+async function calibrarTanque() {
+    try {
+        const response = await fetch('/api/calibrar', {
+            method: 'POST'
+        });
+
+        if (!response.ok) throw new Error("Error calibrando");
+
+        alert("Calibración solicitada. Asegura que el tanque esté vacío.");
+
+    } catch (e) {
+        alert("No se pudo enviar la orden de calibración");
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initChart();
     fetchData();
     setInterval(fetchData, 2000);
+
+    const btn = document.getElementById('btn-calibrar');
+    if (btn) {
+        btn.addEventListener('click', calibrarTanque);
+    }
 });
