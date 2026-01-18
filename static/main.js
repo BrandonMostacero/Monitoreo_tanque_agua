@@ -1,4 +1,5 @@
 let chart;
+let alturaTanque = 12;
 
 function initChart() {
     const ctx = document.getElementById('lineChart').getContext('2d');
@@ -28,30 +29,30 @@ function initChart() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 12,
-                    title: { 
-                        display: true, 
+                    max: alturaTanque,
+                    title: {
+                        display: true,
                         text: "Altura (cm)",
                         color: '#94a3b8'
                     },
                     grid: {
                         color: 'rgba(255, 255, 255, 0.1)'
                     },
-                    ticks: { 
+                    ticks: {
                         color: '#94a3b8',
-                        callback: v => v + " cm" 
+                        callback: v => v + " cm"
                     }
                 },
                 x: {
-                    title: { 
-                        display: true, 
+                    title: {
+                        display: true,
                         text: "Tiempo",
                         color: '#94a3b8'
                     },
                     grid: {
                         display: false
                     },
-                    ticks: { 
+                    ticks: {
                         color: '#94a3b8'
                     }
                 }
@@ -82,6 +83,11 @@ async function fetchData() {
         const cap = data.capacidad_val || 0;
         document.getElementById('water-level').style.height = cap + "%";
         document.getElementById('porcentaje-visual').innerText = cap + "%";
+
+        if (data.h_tanque && data.h_tanque !== alturaTanque) {
+            alturaTanque = data.h_tanque;
+            chart.options.scales.y.max = alturaTanque;
+        }
 
         const registros = data.tabla.slice().reverse();
         chart.data.labels = registros.map(r => r.fecha.split(" ")[1]);
