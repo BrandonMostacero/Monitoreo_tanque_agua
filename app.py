@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify, request, send_file
 from pymongo import MongoClient
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import os
 import pandas as pd
 from io import BytesIO
@@ -15,6 +16,8 @@ coleccion = db["registros"]
 estado_control = {
     "calibrar": False
 }
+
+TZ_PE = ZoneInfo("America/Lima")
 
 @app.route('/')
 def home():
@@ -48,6 +51,7 @@ def get_data():
             "nivel_distancia": ultimo["nivel_cm"],
             "capacidad_val": ultimo["capacidad"],
             "estado_bomba": "ON" if ultimo["bomba"] == 1 else "OFF",
+            "h_tanque": ultimo.get("h_tanque"),
             "ultima_actualizacion": ultimo["fecha"].strftime("%Y-%m-%d %H:%M:%S"),
             "historial_tiempos": [
                 r["fecha"].strftime("%H:%M:%S") for r in registros_cronologicos
@@ -77,11 +81,12 @@ def update_data():
         content = request.json
 
         documento = {
-            "fecha": datetime.now(),
+            "fecha": datetime.now(TZ_PE),
             "nivel_cm": content.get("nivel_cm"),
             "nivel": content.get("nivel"),
             "capacidad": content.get("capacidad"),
-            "bomba": 1 if content.get("bomba") else 0
+            "bomba": 1 if content.get("bomba") else 0,
+            "h_tanque": content.get("h_tanque")
         }
 
         coleccion.insert_one(documento)
