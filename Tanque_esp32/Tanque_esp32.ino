@@ -18,6 +18,7 @@ String serverConfigUrl = "https://monitoreo-tanque.onrender.com/api/control";
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 Preferences prefs;
 
+float OFFSET_SENSOR = 2.0;
 float H_TANQUE = 0.0;
 bool bomba = false;
 bool calibrado = false;
@@ -75,11 +76,13 @@ void verificarCalibracionServidor() {
       lcd.print("Calibrando...");
       Serial.println("CALIBRACION REMOTA");
 
-      float altura = calibrarTanque();
+      float altura = calibrarTanque() - OFFSET_SENSOR;
       guardarAltura(altura);
 
       lcd.clear();
-      lcd.print("Altura OK");
+      lcd.print("Altura: ");
+      lcd.print(altura);
+      lcd.print(" cm");
       delay(1500);
     }
   }
@@ -105,16 +108,19 @@ void setup() {
 
   calibrado = (H_TANQUE > 0);
 
-  lcd.print("Conectando WiFi");
+  lcd.setCursor(0, 0);
+  lcd.print("Conectando...");
+
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
 
+  Serial.println("\nWiFi conectado");
   lcd.clear();
-  lcd.print("WiFi OK");
-  delay(1000);
+  lcd.print("WiFi Conectado");
+  delay(1500);
   lcd.clear();
 }
 
@@ -128,8 +134,8 @@ void loop() {
     return;
   }
 
-  float D_SENSOR = readDistance();
-  if (D_SENSOR < 0) return;
+  float D_SENSOR = readDistance() - OFFSET_SENSOR;
+  if (D_SENSOR < 0) D_SENSOR = 0;
 
   float nivel_cm = H_TANQUE - D_SENSOR;
   nivel_cm = constrain(nivel_cm, 0, H_TANQUE);
@@ -147,15 +153,15 @@ void loop() {
   digitalWrite(RELE_PIN, bomba ? HIGH : LOW);
 
   lcd.setCursor(0, 0);
-  lcd.print("Nivel ");
-  lcd.print(nivel_cm, 1);
-  lcd.print("cm   ");
+  lcd.print("Nivel: ");
+  lcd.print(nivel_cm, 2);
+  lcd.print(" cm      ");
 
   lcd.setCursor(0, 1);
   lcd.print(capacidad);
   lcd.print("% ");
   lcd.print("B:");
-  lcd.print(bomba ? "ON " : "OFF");
+  lcd.print(bomba ? "ON      " : "OFF      ");
 
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
