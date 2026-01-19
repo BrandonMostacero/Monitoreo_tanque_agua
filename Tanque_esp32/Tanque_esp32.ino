@@ -176,7 +176,7 @@ void verificarServidor() {
       bomba = false;
       lcd.clear();
       lcd.print("Altura: ");
-      lcd.print(altura, 1);
+      lcd.print(altura, 2);
       lcd.print("cm");
       delay(2000);
     }
