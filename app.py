@@ -43,6 +43,15 @@ def get_data():
         if not registros:
             return jsonify({"error": "No hay datos"}), 404
 
+        # Convertir fechas a hora Perú
+        for r in registros:
+            r["fecha"] = (
+                r["fecha"]
+                .replace(tzinfo=ZoneInfo("UTC"))
+                .astimezone(TZ_PE)
+                .strftime("%Y-%m-%d %H:%M:%S")
+            )
+
         ultimo = registros[0]
         registros_cronologicos = registros[::-1]
 
@@ -52,9 +61,9 @@ def get_data():
             "capacidad_val": ultimo["capacidad"],
             "estado_bomba": "ON" if ultimo["bomba"] == 1 else "OFF",
             "h_tanque": ultimo.get("h_tanque"),
-            "ultima_actualizacion": ultimo["fecha"].strftime("%Y-%m-%d %H:%M:%S"),
+            "ultima_actualizacion": ultimo["fecha"],
             "historial_tiempos": [
-                r["fecha"].strftime("%H:%M:%S") for r in registros_cronologicos
+                r["fecha"].split(" ")[1] for r in registros_cronologicos
             ],
             "historial_niveles": [
                 r["nivel"] for r in registros_cronologicos
