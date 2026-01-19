@@ -1,5 +1,5 @@
 let chart;
-let alturaTanque = 12;
+let alturaTanque = null;
 
 function initChart() {
     const ctx = document.getElementById('lineChart').getContext('2d');
@@ -29,7 +29,7 @@ function initChart() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: alturaTanque,
+                    max: 15,
                     title: {
                         display: true,
                         text: "Altura (cm)",
@@ -87,6 +87,7 @@ async function fetchData() {
         if (data.h_tanque && data.h_tanque !== alturaTanque) {
             alturaTanque = data.h_tanque;
             chart.options.scales.y.max = alturaTanque;
+            chart.update();
         }
 
         const registros = data.tabla.slice().reverse();
@@ -140,3 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', calibrarTanque);
     }
 });
+
+if (data.h_tanque !== null && data.h_tanque !== undefined) {
+    document.getElementById('altura-tanque').innerText =
+        data.h_tanque.toFixed(2) + " cm";
+}
