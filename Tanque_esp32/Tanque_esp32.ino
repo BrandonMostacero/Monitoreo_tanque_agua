@@ -175,9 +175,10 @@ void verificarServidor() {
 
       bomba = false;
       lcd.clear();
-      lcd.print("Altura:");
+      lcd.print("Altura: ");
       lcd.print(altura, 1);
       lcd.print("cm");
+      delay(2000);
     }
   }
   http.end();
