@@ -74,6 +74,11 @@ async function fetchData() {
         document.getElementById('nivel-cm').innerText = data.nivel_distancia + " cm";
         document.getElementById('bomba-status').innerText = data.estado_bomba;
 
+        if (data.h_tanque !== null && data.h_tanque !== undefined) {
+            document.getElementById('altura-tanque').innerText =
+            Number(data.h_tanque).toFixed(2) + " cm";
+        }
+
         if (data.ultima_actualizacion) {
             const [fecha, hora] = data.ultima_actualizacion.split(" ");
             document.getElementById('ultima-fecha').innerText = fecha;
@@ -141,8 +146,3 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', calibrarTanque);
     }
 });
-
-if (data.h_tanque !== null && data.h_tanque !== undefined) {
-    document.getElementById('altura-tanque').innerText =
-        data.h_tanque.toFixed(2) + " cm";
-}
