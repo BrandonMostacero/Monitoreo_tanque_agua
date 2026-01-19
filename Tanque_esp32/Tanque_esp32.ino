@@ -12,22 +12,44 @@
 #define ECHO 32
 
 // Variables con el ssid y contraseña del WiFi a conectarse
-const char* ssid = "NOMBRE_WIFI";
-const char* password = "CLAVE_WIFI";
+const char* ssid = "CHIQUITINA";
+const char* password = "MAURMOS1980";
 
-// Variables con los URL para POST y GET del esp32
-String serverUpdateUrl = "https://SERVER_RENDER.com/api/update";
-String serverConfigUrl = "https://SERVER_RENDER.com/api/control";
+// URL para envío y control
+String serverUpdateUrl = "https://monitoreo-tanque.onrender.com/api/update";
+String serverConfigUrl = "https://monitoreo-tanque.onrender.com/api/control";
 
+// Config del LCD
 LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// Memoria no volátil (EEPROM)
 Preferences prefs;
 
-float OFFSET_SENSOR = 2.0; // Distancia (en cm) paa que no alcance mas de 2cm la altura del agua
-float H_TANQUE = 0.0;
-bool bomba = false;
-bool calibrado = false;
+// Variables globales del sistema
+float OFFSET_SENSOR = 2.0;     // Protección del sensor (2 cm)
+float H_TANQUE = 0.0;          // Altura total del tanque
+bool calibrado = false;        // Indica si el tanque fue calibrado
+bool bomba = false;            // Estado de la bomba
 
-// Función de la lectura del sensor
+// Variables de medición y control
+float distancia_cm = 0;
+float nivel_cm = 0;
+int capacidad = 0;
+String nivel = "BAJO";
+
+// Variables de temporización (millis)
+unsigned long tSensor = 0;
+unsigned long tLCD = 0;
+unsigned long tSend = 0;
+unsigned long tControl = 0;
+
+// Intervalows de ejecución (no bloqueantes)
+const unsigned long SENSOR_INTERVAL  = 200;   // Lectura del sensor
+const unsigned long LCD_INTERVAL     = 200;   // Actualización del LCD
+const unsigned long SEND_INTERVAL    = 3000;  // Envío HTTP
+const unsigned long CONTROL_INTERVAL = 5000;  // Control remoto
+
+// Funcion para leer distancia del sensor ultrasónico
 float readDistance() {
   digitalWrite(TRIG, LOW);
   delayMicroseconds(2);
@@ -41,7 +63,74 @@ float readDistance() {
   return duration * 0.0343 / 2.0;
 }
 
-// Funcion para calibrar tanque con lecturas promedio
+// Funcion de actualización del sensor y control de bomba
+void actualizarSensor() {
+  float d = readDistance();
+  if (d < 0) return;
+
+  distancia_cm = d;
+
+  float d_efectiva = d - OFFSET_SENSOR;
+  if (d_efectiva < 0) d_efectiva = 0;
+
+  nivel_cm = H_TANQUE - d_efectiva;
+  nivel_cm = constrain(nivel_cm, 0, H_TANQUE);
+
+  capacidad = (nivel_cm * 100) / H_TANQUE;
+
+  if (capacidad >= 75) nivel = "ALTO";
+  else if (capacidad >= 50) nivel = "MEDIO";
+  else nivel = "BAJO";
+
+  if (!bomba && capacidad <= 25) bomba = true;
+  if (bomba && capacidad >= 90) bomba = false;
+
+  digitalWrite(RELE_PIN, bomba ? HIGH : LOW);
+}
+
+// Funcion para actualizar el LCD
+void actualizarLCD() {
+  if (!calibrado) {
+    lcd.setCursor(0, 0);
+    lcd.print("No calibrado   ");
+    lcd.setCursor(0, 1);
+    lcd.print("Esperando...   ");
+    return;
+  }
+
+  lcd.setCursor(0, 0);
+  lcd.print("Nivel: ");
+  lcd.print(nivel_cm, 2);
+  lcd.print("cm   ");
+
+  lcd.setCursor(0, 1);
+  lcd.print(capacidad);
+  lcd.print("% B:");
+  lcd.print(bomba ? "ON     " : "OFF   ");
+}
+
+// Funcion para enviar datos al servidor (HTTP POST)
+void enviarServidor() {
+  if (WiFi.status() != WL_CONNECTED || !calibrado) return;
+
+  HTTPClient http;
+  http.setTimeout(800);
+  http.begin(serverUpdateUrl);
+  http.addHeader("Content-Type", "application/json");
+
+  String json = "{"
+    "\"nivel_cm\":" + String(nivel_cm, 2) +
+    ",\"nivel\":\"" + nivel +
+    "\",\"bomba\":" + String(bomba) +
+    ",\"capacidad\":" + String(capacidad) +
+    ",\"h_tanque\":" + String(H_TANQUE, 2) +
+  "}";
+
+  http.POST(json);
+  http.end();
+}
+
+// Funcion de calibracion del tanque
 float calibrarTanque() {
   float suma = 0;
   int muestras = 10;
@@ -49,12 +138,12 @@ float calibrarTanque() {
   for (int i = 0; i < muestras; i++) {
     float d = readDistance();
     if (d > 0) suma += d;
-    delay(150);
+    delay(150);   // SOLO durante calibración
   }
   return suma / muestras;
 }
 
-// Funcion para guardar la altura del tanque
+// Funcion para guardar la altura en EEPROM
 void guardarAltura(float altura) {
   prefs.begin("tanque", false);
   prefs.putFloat("altura", altura);
@@ -64,42 +153,37 @@ void guardarAltura(float altura) {
   calibrado = true;
 }
 
-// Verifica si el servidor envia la solicitud para calibrar
-void verificarCalibracionServidor() {
+// Funcion para verificar solicitudes del servidor
+void verificarServidor() {
   if (WiFi.status() != WL_CONNECTED) return;
 
   HTTPClient http;
+  http.setTimeout(800);
   http.begin(serverConfigUrl);
 
-  int code = http.GET();
-  if (code == 200) {
-    String payload = http.getString();
+  if (http.GET() == 200) {
     StaticJsonDocument<200> doc;
-    deserializeJson(doc, payload);
+    deserializeJson(doc, http.getString());
 
-    bool calibrar = doc["calibrar"];
-
-    if (calibrar) {
+    if (doc["calibrar"]) {
+      bomba = false;
       lcd.clear();
       lcd.print("Calibrando...");
-      Serial.println("CALIBRACION REMOTA");
 
-      // Altura real del tanque es la distancia medida por el sensor - 2 cm 
-      // Para proteger al sensor por desbordamiento
-      float altura = calibrarTanque() - OFFSET_SENSOR; 
+      float altura = calibrarTanque() - OFFSET_SENSOR;
       guardarAltura(altura);
 
+      bomba = false;
       lcd.clear();
-      lcd.print("Altura: ");
-      lcd.print(altura);
-      lcd.print(" cm");
-      delay(1500);
+      lcd.print("Altura:");
+      lcd.print(altura, 1);
+      lcd.print("cm");
     }
   }
-
   http.end();
 }
 
+// SETUP
 void setup() {
   Serial.begin(115200);
 
@@ -118,93 +202,39 @@ void setup() {
 
   calibrado = (H_TANQUE > 0);
 
-  lcd.setCursor(0, 0);
   lcd.print("Conectando...");
-
-  // Mientras no se conecte a WiFi no se ejecutará el resto de código
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+    delay(300);
   }
 
-  Serial.println("\nWiFi conectado");
   lcd.clear();
-  lcd.print("WiFi Conectado");
-  delay(1500);
+  lcd.print("WiFi conectado");
+  delay(1000);
   lcd.clear();
 }
 
+// LOOP
 void loop() {
-  // Verifica la solicitud en cada vuelta
-  verificarCalibracionServidor();
+  unsigned long now = millis();
 
-  // Si aun no se ha calibrado la altura, se mostrará en pantalla
-  if (!calibrado) {
-    lcd.setCursor(0, 0);
-    lcd.print("No calibrado ");
-    delay(1000);
-    return;
+  if (now - tSensor >= SENSOR_INTERVAL) {
+    tSensor = now;
+    if (calibrado) actualizarSensor();
   }
 
-  // Distancia medida por el sensor
-  float D_SENSOR = readDistance();
-  if (D_SENSOR < 0) D_SENSOR = 0;
-
-  // Altura del agua
-  float nivel_cm = H_TANQUE - (D_SENSOR - OFFSET_SENSOR);
-
-  // Mantiene a la altura del agua en valores entre 0 y H_TANQUE
-  nivel_cm = constrain(nivel_cm, 0, H_TANQUE);
-
-  // Capacidad del tanque en porcentaje
-  int capacidad = (nivel_cm * 100) / H_TANQUE;
-
-  // Clasificación en niveles ALTO, MEDIO y BAJO
-  String nivel;
-  if (capacidad >= 75) nivel = "ALTO";
-  else if (capacidad >= 50) nivel = "MEDIO";
-  else nivel = "BAJO";
-
-  // Si el nivel del agua es menor a 25% se activa la bomba hasta que llegue al 90%
-  if (!bomba && capacidad <= 25) bomba = true;
-  if (bomba && capacidad >= 90) bomba = false;
-
-  digitalWrite(RELE_PIN, bomba ? HIGH : LOW);
-
-  lcd.setCursor(0, 0);
-  lcd.print("Nivel: ");
-  lcd.print(nivel_cm, 2);
-  lcd.print(" cm      ");
-
-  lcd.setCursor(0, 1);
-  lcd.print(capacidad);
-  lcd.print("% ");
-  lcd.print("B:");
-  lcd.print(bomba ? "ON      " : "OFF      ");
-
-  // Envia al servidor un JSON con la estructura nivel_cm, clasificacion, estado de la bomba y la capacidad en %
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(serverUpdateUrl);
-    http.addHeader("Content-Type", "application/json");
-
-    String json = "{"
-      "\"nivel_cm\":" + String(nivel_cm, 2) +
-      ",\"nivel\":\"" + nivel +
-      "\",\"bomba\":" + String(bomba) +
-      ",\"capacidad\":" + String(capacidad) +
-    "}";
-
-    Serial.println("Enviando JSON:");
-    Serial.println(json);
-
-    int httpResponseCode = http.POST(json);
-    Serial.print("HTTP Response: ");
-    Serial.println(httpResponseCode);
-    http.end();
+  if (now - tLCD >= LCD_INTERVAL) {
+    tLCD = now;
+    actualizarLCD();
   }
 
-  // Delay de 1.5 segundos entre cada lectura
-  delay(1500);
+  if (now - tSend >= SEND_INTERVAL) {
+    tSend = now;
+    enviarServidor();
+  }
+
+  if (now - tControl >= CONTROL_INTERVAL) {
+    tControl = now;
+    verificarServidor();
+  }
 }
