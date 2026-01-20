@@ -136,6 +136,40 @@ async function calibrarTanque() {
     }
 }
 
+async function modoAutomatico() {
+    try {
+        const res = await fetch('/api/control/auto', {
+            method: 'POST'
+        });
+
+        if (!res.ok) throw new Error();
+        alert("Modo automático activado");
+
+    } catch {
+        alert("No se pudo cambiar a modo automático");
+    }
+}
+
+async function controlBombaManual(encender) {
+    try {
+        const res = await fetch('/api/control/manual', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                bomba: encender
+            })
+        });
+
+        if (!res.ok) throw new Error();
+        alert(encender ? "Bomba ENCENDIDA (manual)" : "Bomba APAGADA (manual)");
+
+    } catch {
+        alert("No se pudo controlar la bomba");
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initChart();
     fetchData();
