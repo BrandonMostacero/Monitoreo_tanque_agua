@@ -16,7 +16,7 @@ coleccion = db["registros"]
 estado_control = {
     "calibrar": False,
     "modo": "auto",
-    "bomba": False
+    "bomba_manual": 0
 }
 
 
@@ -112,30 +112,27 @@ def control():
     respuesta = {
         "calibrar": estado_control["calibrar"],
         "modo": estado_control["modo"],
-        "bomba": estado_control["bomba"]
+        "bomba_manual": estado_control["bomba_manual"]
     }
 
     estado_control["calibrar"] = False
 
     return jsonify(respuesta)
 
+
 @app.route('/api/control/auto', methods=['POST'])
-def control_auto():
+def modo_auto():
     estado_control["modo"] = "auto"
-    return jsonify({"status": "ok", "modo": "auto"})
+    return jsonify({"status": "auto"})
 
 @app.route('/api/control/manual', methods=['POST'])
-def control_manual():
+def modo_manual():
     data = request.json
 
     estado_control["modo"] = "manual"
-    estado_control["bomba"] = bool(data.get("bomba", False))
+    estado_control["bomba_manual"] = 1 if data.get("bomba") else 0
 
-    return jsonify({
-        "status": "ok",
-        "modo": "manual",
-        "bomba": estado_control["bomba"]
-    })
+    return jsonify({"status": "manual"})
 
 @app.route('/api/calibrar', methods=['POST'])
 def solicitar_calibracion():
