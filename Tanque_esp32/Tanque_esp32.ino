@@ -12,12 +12,12 @@
 #define ECHO 32
 
 // Variables con el ssid y contraseña del WiFi a conectarse
-const char* ssid = "NOMBRE_WIFI";
-const char* password = "CLAVE_WIFI";
+const char* ssid = "BIBLIOCENTRAL";
+const char* password = "";
 
 // URL para envío y control
-String serverUpdateUrl = "https://SERVER_RENDER.com/api/update";
-String serverConfigUrl = "https://SERVER_RENDER.com/api/control";
+String serverUpdateUrl = "https://monitoreo-tanque.onrender.com/api/update";
+String serverConfigUrl = "https://monitoreo-tanque.onrender.com/api/control";
 
 // Config del LCD
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -30,6 +30,8 @@ float OFFSET_SENSOR = 2.0;     // Protección del sensor (2 cm)
 float H_TANQUE = 0.0;          // Altura total del tanque
 bool calibrado = false;        // Indica si el tanque fue calibrado
 bool bomba = false;            // Estado de la bomba
+bool modoManual = false;       // false = automático, true = manual
+bool bombaManual = false;      // estado impuesto por el usuario
 
 // Variables de medición y control
 float distancia_cm = 0;
@@ -46,7 +48,7 @@ unsigned long tControl = 0;
 // Intervalows de ejecución (no bloqueantes)
 const unsigned long SENSOR_INTERVAL  = 200;   // Lectura del sensor
 const unsigned long LCD_INTERVAL     = 200;   // Actualización del LCD
-const unsigned long SEND_INTERVAL    = 3000;  // Envío HTTP
+const unsigned long SEND_INTERVAL    = 2000;  // Envío HTTP
 const unsigned long CONTROL_INTERVAL = 5000;  // Control remoto
 
 // Funcion para leer distancia del sensor ultrasónico
@@ -82,8 +84,13 @@ void actualizarSensor() {
   else if (capacidad >= 50) nivel = "MEDIO";
   else nivel = "BAJO";
 
-  if (!bomba && capacidad <= 25) bomba = true;
-  if (bomba && capacidad >= 90) bomba = false;
+  if (!modoManual) {
+    if (!bomba && capacidad <= 25) bomba = true;
+    if (bomba && capacidad >= 90) bomba = false;
+  }
+  else {
+    bomba = bombaManual;
+  }
 
   digitalWrite(RELE_PIN, bomba ? HIGH : LOW);
 }
@@ -105,7 +112,16 @@ void actualizarLCD() {
 
   lcd.setCursor(0, 1);
   lcd.print(capacidad);
-  lcd.print("% B:");
+  lcd.print("%");
+
+  lcd.setCursor(4, 1);
+  if (modoManual) {
+    lcd.print("MAN.");
+  }
+  else {
+    lcd.print("AUTO");
+  }
+  lcd.print(" B:");
   lcd.print(bomba ? "ON     " : "OFF   ");
 }
 
@@ -138,7 +154,7 @@ float calibrarTanque() {
   for (int i = 0; i < muestras; i++) {
     float d = readDistance();
     if (d > 0) suma += d;
-    delay(150);   // SOLO durante calibración
+    delay(150);
   }
   return suma / muestras;
 }
@@ -158,8 +174,8 @@ void verificarServidor() {
   if (WiFi.status() != WL_CONNECTED) return;
 
   HTTPClient http;
-  http.setTimeout(800);
   http.begin(serverConfigUrl);
+  http.setTimeout(800);
 
   if (http.GET() == 200) {
     StaticJsonDocument<200> doc;
@@ -167,19 +183,23 @@ void verificarServidor() {
 
     if (doc["calibrar"]) {
       bomba = false;
+      digitalWrite(RELE_PIN, LOW);
+
       lcd.clear();
       lcd.print("Calibrando...");
-
       float altura = calibrarTanque() - OFFSET_SENSOR;
       guardarAltura(altura);
 
-      bomba = false;
       lcd.clear();
       lcd.print("Altura: ");
-      lcd.print(altura, 2);
+      lcd.print(altura, 1);
       lcd.print("cm");
       delay(2000);
+      return;
     }
+
+    modoManual = (doc["modo"] == false);
+    bombaManual = doc["bomba_manual"].as<int>() == 1;
   }
   http.end();
 }
