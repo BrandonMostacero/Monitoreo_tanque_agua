@@ -14,8 +14,11 @@ db = client["tanque_db"]
 coleccion = db["registros"]
 
 estado_control = {
-    "calibrar": False
+    "calibrar": False,
+    "modo": "auto",
+    "bomba": False
 }
+
 
 TZ_PE = ZoneInfo("America/Lima")
 
@@ -107,11 +110,32 @@ def update_data():
 @app.route('/api/control')
 def control():
     respuesta = {
-        "calibrar": estado_control["calibrar"]
+        "calibrar": estado_control["calibrar"],
+        "modo": estado_control["modo"],
+        "bomba": estado_control["bomba"]
     }
 
     estado_control["calibrar"] = False
+
     return jsonify(respuesta)
+
+@app.route('/api/control/auto', methods=['POST'])
+def control_auto():
+    estado_control["modo"] = "auto"
+    return jsonify({"status": "ok", "modo": "auto"})
+
+@app.route('/api/control/manual', methods=['POST'])
+def control_manual():
+    data = request.json
+
+    estado_control["modo"] = "manual"
+    estado_control["bomba"] = bool(data.get("bomba", False))
+
+    return jsonify({
+        "status": "ok",
+        "modo": "manual",
+        "bomba": estado_control["bomba"]
+    })
 
 @app.route('/api/calibrar', methods=['POST'])
 def solicitar_calibracion():
