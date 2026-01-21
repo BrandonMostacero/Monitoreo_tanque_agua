@@ -175,8 +175,8 @@
         </div>
 
         <div class="row mt-3 justify-content-center">
-            <div class="col-md-3 col-sm-6">
-                <div class="card p-3 border-top border-light border-4 text-center">
+            <div class="col-12 col-sm-8 col-md-3 d-flex justify-content-center">
+                <div class="card p-3 border-top border-light border-4 text-center w-100">
                     <div class="card-title-custom">Altura del Tanque</div>
                     <h3 id="altura-tanque" class="fw-bold">-- cm</h3>
                     <div class="small light-custom">Altura calibrada</div>
@@ -196,18 +196,29 @@
         </div>
     </div>
 
-    <div class="control-panel">
-        <button onclick="modoAutomatico()" class="btn btn-primary">
-            Modo Automático
-        </button>
+    <div class="control-panel mt-3">
+        <div class="row g-2">
+            <div class="col-12 col-md-4">
+                <button onclick="modoAutomatico()"
+                    class="btn btn-primary w-100 py-3 fw-bold">
+                    Modo Automático
+                </button>
+            </div>
 
-        <button onclick="controlBombaManual(true)" class="btn btn-danger">
-            Encender Bomba
-        </button>
+            <div class="col-6 col-md-4">
+                <button onclick="controlBombaManual(true)"
+                    class="btn btn-success w-100 py-3 fw-bold">
+                    Encender
+                </button>
+            </div>
 
-        <button onclick="controlBombaManual(false)" class="btn btn-success">
-            Apagar Bomba
-        </button>
+            <div class="col-6 col-md-4">
+                <button onclick="controlBombaManual(false)"
+                    class="btn btn-danger w-100 py-3 fw-bold">
+                    Apagar
+                </button>
+            </div>
+        </div>
     </div>
 
     <div class="row mt-2">
