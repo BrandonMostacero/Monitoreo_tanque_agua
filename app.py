@@ -1,3 +1,4 @@
+# Librerías
 from flask import Flask, render_template, jsonify, request, send_file
 from pymongo import MongoClient
 from datetime import datetime
@@ -6,6 +7,7 @@ import os
 import pandas as pd
 from io import BytesIO
 
+# Config
 app = Flask(__name__)
 
 MONGO_URI = os.environ.get("MONGO_URI")
@@ -13,26 +15,31 @@ client = MongoClient(MONGO_URI)
 db = client["tanque_db"]
 coleccion = db["registros"]
 
+TZ_PE = ZoneInfo("America/Lima")
+
 estado_control = {
     "calibrar": False,
-    "modo": True,
+    "modo": True,   # True = automático, False = manual
     "bomba_manual": 0
 }
 
-TZ_PE = ZoneInfo("America/Lima")
-
+# Ruta de Vistas (HTML)
 @app.route('/')
 def home():
     return render_template('home.html')
+
 
 @app.route('/dashboard')
 def dashboard():
     return render_template('index.html')
 
+
 @app.route('/registros')
 def registros():
     return render_template('registros.html')
 
+
+# API - DATOS
 @app.route('/api/data')
 def get_data():
     try:
@@ -45,7 +52,6 @@ def get_data():
         if not registros:
             return jsonify({"error": "No hay datos"}), 404
 
-        # Convertir fechas a hora Perú
         for r in registros:
             r["fecha"] = (
                 r["fecha"]
@@ -76,11 +82,13 @@ def get_data():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 @app.route('/api/registros')
 def get_all_registros():
     try:
         registros = list(
-            coleccion.find({}, {"_id": 0}).sort("fecha", -1)
+            coleccion.find({}, {"_id": 0})
+            .sort("fecha", -1)
         )
 
         for r in registros:
@@ -95,6 +103,7 @@ def get_all_registros():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/update', methods=['POST'])
 def update_data():
@@ -116,6 +125,8 @@ def update_data():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
+
+# API - CONTROL
 @app.route('/api/control')
 def control():
     respuesta = {
@@ -128,10 +139,12 @@ def control():
 
     return jsonify(respuesta)
 
+
 @app.route('/api/control/auto', methods=['POST'])
 def modo_auto():
     estado_control["modo"] = True
     return jsonify({"status": "auto"})
+
 
 @app.route('/api/control/manual', methods=['POST'])
 def modo_manual():
@@ -142,11 +155,14 @@ def modo_manual():
 
     return jsonify({"status": "manual"})
 
+
 @app.route('/api/calibrar', methods=['POST'])
 def solicitar_calibracion():
     estado_control["calibrar"] = True
     return jsonify({"status": "ok"})
 
+
+# EXPORTACIÓN A XLSX
 @app.route('/api/export/excel')
 def export_excel():
     registros = list(coleccion.find({}, {"_id": 0}))
@@ -178,4 +194,7 @@ def export_excel():
     )
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000))
+    )
