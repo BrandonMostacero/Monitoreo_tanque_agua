@@ -107,7 +107,7 @@ async function fetchData() {
                 <td>${r.nivel_cm} cm</td>
                 <td>${r.nivel}</td>
                 <td>
-                    <span class="badge ${r.bomba ? 'bg-danger' : 'bg-success'}">
+                    <span class="badge ${r.bomba ? 'bg-success' : 'bg-danger'}">
                         ${r.bomba ? 'ON' : 'OFF'}
                     </span>
                 </td>
