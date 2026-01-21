@@ -19,7 +19,6 @@ estado_control = {
     "bomba_manual": 0
 }
 
-
 TZ_PE = ZoneInfo("America/Lima")
 
 @app.route('/')
@@ -118,7 +117,6 @@ def control():
     estado_control["calibrar"] = False
 
     return jsonify(respuesta)
-
 
 @app.route('/api/control/auto', methods=['POST'])
 def modo_auto():
