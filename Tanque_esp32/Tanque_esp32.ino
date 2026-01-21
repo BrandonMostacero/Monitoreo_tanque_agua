@@ -51,6 +51,7 @@ const unsigned long LCD_INTERVAL     = 200;   // Actualización del LCD
 const unsigned long SEND_INTERVAL    = 2000;  // Envío HTTP
 const unsigned long CONTROL_INTERVAL = 5000;  // Control remoto
 
+
 // Funcion para leer distancia del sensor ultrasónico
 float readDistance() {
   digitalWrite(TRIG, LOW);
@@ -63,6 +64,29 @@ float readDistance() {
   if (duration == 0) return -1;
 
   return duration * 0.0343 / 2.0;
+}
+
+// Funcion de calibracion del tanque
+float calibrarTanque() {
+  float suma = 0;
+  int muestras = 10;
+
+  for (int i = 0; i < muestras; i++) {
+    float d = readDistance();
+    if (d > 0) suma += d;
+    delay(150);
+  }
+  return suma / muestras;
+}
+
+// Funcion para guardar la altura en EEPROM
+void guardarAltura(float altura) {
+  prefs.begin("tanque", false);
+  prefs.putFloat("altura", altura);
+  prefs.end();
+
+  H_TANQUE = altura;
+  calibrado = true;
 }
 
 // Funcion de actualización del sensor y control de bomba
@@ -144,29 +168,6 @@ void enviarServidor() {
 
   http.POST(json);
   http.end();
-}
-
-// Funcion de calibracion del tanque
-float calibrarTanque() {
-  float suma = 0;
-  int muestras = 10;
-
-  for (int i = 0; i < muestras; i++) {
-    float d = readDistance();
-    if (d > 0) suma += d;
-    delay(150);
-  }
-  return suma / muestras;
-}
-
-// Funcion para guardar la altura en EEPROM
-void guardarAltura(float altura) {
-  prefs.begin("tanque", false);
-  prefs.putFloat("altura", altura);
-  prefs.end();
-
-  H_TANQUE = altura;
-  calibrado = true;
 }
 
 // Funcion para verificar solicitudes del servidor
