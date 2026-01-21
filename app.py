@@ -82,7 +82,17 @@ def get_all_registros():
         registros = list(
             coleccion.find({}, {"_id": 0}).sort("fecha", -1)
         )
+
+        for r in registros:
+            r["fecha"] = (
+                r["fecha"]
+                .replace(tzinfo=ZoneInfo("UTC"))
+                .astimezone(TZ_PE)
+                .strftime("%Y-%m-%d %H:%M:%S")
+            )
+
         return jsonify(registros)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
