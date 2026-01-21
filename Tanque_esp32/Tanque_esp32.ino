@@ -12,12 +12,12 @@
 #define ECHO 32
 
 // Variables con el ssid y contraseña del WiFi a conectarse
-const char* ssid = "BIBLIOCENTRAL";
-const char* password = "";
+const char* ssid = "NOMBRE_WIFI";
+const char* password = "CLAVE_WIFI";
 
 // URL para envío y control
-String serverUpdateUrl = "https://monitoreo-tanque.onrender.com/api/update";
-String serverConfigUrl = "https://monitoreo-tanque.onrender.com/api/control";
+String serverUpdateUrl = "https://SERVER_RENDER.com/api/update";
+String serverConfigUrl = "https://SERVER_RENDER.com/api/control";
 
 // Config del LCD
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -192,7 +192,7 @@ void verificarServidor() {
 
       lcd.clear();
       lcd.print("Altura: ");
-      lcd.print(altura, 1);
+      lcd.print(altura, 2);
       lcd.print("cm");
       delay(2000);
       return;
